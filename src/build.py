@@ -139,6 +139,12 @@ class FactoryObj():
         org_connection: str
             Origin direction the asset attaches to
         """
+
+        tile_key = (idx, jdx)
+        if tile_key in self.spawned_tiles:
+            return
+        self.spawned_tiles.add(tile_key)
+
         openings, connection_type, angle = self.get_node_info(graph, idx, jdx)  # Obtain node information
 
         # Randomly select which asset will be imported for the connection type
@@ -256,7 +262,7 @@ class FactoryObj():
             """
 
             # Mark the opening as visited
-            if org_connection not in openings:  graph[idx][jdx].openings.append(org_connection)
+            if org_connection not in graph[idx][jdx].openings:  graph[idx][jdx].openings.append(org_connection)
 
             # If this was the last opening, the asset was capped and no more connections are possible
             if graph[dst_idx][dst_jdx].openings.__len__() == 0: return
@@ -327,6 +333,12 @@ class FactoryObj():
         org_connection: str
             Origin direction the asset attaches to
         """
+
+        tile_key = (idx, jdx)
+        if tile_key in self.spawned_tiles:
+            return
+        self.spawned_tiles.add(tile_key)
+
         openings, connection_type, angle = self.get_connection_info(graph, idx, jdx)  # Obtain connection information
 
         # Randomly select which asset will be imported for the connection type
@@ -418,7 +430,8 @@ class FactoryObj():
             function_asset(graph, dst_idx, dst_jdx, new_offsetx, new_offsety, dst_connection)
 
         for connection in list(openings):   # Recursively complete the grid for each of the remaining connections
-            if   connection == org_connection:  continue  # Omit origin direction
+            if connection not in graph[idx][jdx].openings: continue
+            if   connection == org_connection:             continue  # Omit origin direction
 
             if   connection == 'n':  recursiveConnection('n', 's', idx, jdx, idx - 1, jdx,     base_offsetx,           base_offsety - offsety)
             elif connection == 's':  recursiveConnection('s', 'n', idx, jdx, idx + 1, jdx,     base_offsetx,           base_offsety + offsety)
@@ -450,6 +463,7 @@ class FactoryObj():
         """
 
         self.imported_objects = []                  # Reset imported objects list
+        self.spawned_tiles = set()
         self.current_base_offsetz = base_offsetz    # Set base offset for z-axis
 
         # Select and remove all objects in blender python memory
